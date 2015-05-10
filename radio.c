@@ -1,4 +1,6 @@
+#include <stdint.h>
 #include "cc1111.h"
+#include "delay.h"
 
 #define FREQUENCY_USA
 
@@ -9,7 +11,7 @@ void radio_init(void)
     SYNC1 = 0xFF;
     SYNC0 = 0x00;  // sync word
 
-    PKTLEN = 0xFF;  // packet length
+    PKTLEN = 0xFF;  // packet length (default)
 
     PKTCTRL1 = 0x00;  // always accept sync word
                       // do not append status
@@ -82,4 +84,24 @@ void radio_init(void)
     // Power amplifier output settings
     PA_TABLE7 = 0x00; PA_TABLE6 = 0x00; PA_TABLE5 = 0x00; PA_TABLE4 = 0x00;
     PA_TABLE3 = 0x00; PA_TABLE2 = 0x52; PA_TABLE1 = 0x00; PA_TABLE0 = 0x00;
+}
+
+int radio_receive(uint8_t *buf, int buf_len)
+{
+    int n;
+    uint8_t prev_test1 = TEST1;
+
+    TEST1 = 0x35;  // improve RX sensitivity
+    RFST = RFST_SRX;
+    for (n = 0; n < buf_len; ++n) {
+        while (!RFTXRXIF)
+            nop();
+        buf[n] = RFD;
+        TCON &= ~TCON_RFTXRXIF;
+        if (buf[n] == 0)
+            break;
+    }
+    RFST = RFST_SIDLE;
+    TEST1 = prev_test1;
+    return n;
 }
