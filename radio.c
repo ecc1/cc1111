@@ -1,7 +1,7 @@
 #include "radio.h"
 
 #include "cc1111.h"
-#include "delay.h"
+#include "clock.h"
 
 void radio_init(void)
 {

@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define nop()	__asm nop __endasm
-
 void delay(uint16_t ms);
 
 #endif /* _DELAY_H */

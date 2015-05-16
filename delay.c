@@ -1,5 +1,7 @@
 #include "delay.h"
 
+#include "clock.h"
+
 void delay(uint16_t msec)
 {
 	while (msec--) {

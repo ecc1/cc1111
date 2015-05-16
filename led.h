@@ -5,6 +5,8 @@
 
 void led_init(void);
 
+void led_toggle(void);
+
 // Blink LED once per period_ms.
 // Blink count times, or indefinitely if count == 0.
 

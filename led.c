@@ -27,12 +27,19 @@ void led_init(void)
 #endif
 }
 
+void led_toggle(void)
+{
+	LED_BIT ^= 1;
+}
+
 static void blink_once(uint16_t period_ms)
 {
 	uint16_t half = period_ms / 2;
-	LED_BIT ^= 1;
+
+	led_toggle();
 	delay(half);
-	LED_BIT ^= 1;
+
+	led_toggle();
 	delay(half);
 }
 

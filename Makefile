@@ -16,7 +16,7 @@ LDFLAGS = --out-fmt-ihx \
 	  --xram-loc 0xF000 --xram-size 0xF00 \
 	  --iram-size 0x100
 
-PROGRAMS = blinktest delaytest rxtest serialtest
+PROGRAMS = blinktest delaytest rxtest serialtest timetest
 
 LIBRARY = modules.lib
 
