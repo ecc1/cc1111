@@ -1,4 +1,7 @@
+#include "serial.h"
+
 #include "cc1111.h"
+#include "delay.h"
 
 void serial_init(void)
 {
@@ -12,17 +15,23 @@ void serial_init(void)
     P0DIR |= (1 << 3);
     P0DIR &= ~(1 << 2);
 
-#if BAUD_RATE==9600
+#if BAUD_RATE == 9600
+
     U0BAUD = 163;
     U0GCR = 8;
-#elif BAUD_RATE==57600
+
+#elif BAUD_RATE == 57600
+
     U0BAUD = 59;
     U0GCR = 11;
-#elif BAUD_RATE==115200
+
+#elif BAUD_RATE == 115200
+
     U0BAUD = 59;
     U0GCR = 12;
+
 #else
-#error "BAUD_RATE is undefined"
+#error "unknown BAUD_RATE"
 #endif
 
     U0UCR = (UxUCR_FLUSH |
@@ -43,6 +52,6 @@ void serial_putc(char c)
 {
     U0DBUF = c;
     while (!UTX0IF)
-        __asm nop __endasm;
+        nop();
     UTX0IF = 0;
 }

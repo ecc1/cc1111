@@ -1,8 +1,7 @@
-#include <stdint.h>
+#include "radio.h"
+
 #include "cc1111.h"
 #include "delay.h"
-
-#define FREQUENCY_USA
 
 void radio_init(void)
 {
@@ -28,12 +27,19 @@ void radio_init(void)
     FSCTRL0 = 0x00;  // frequency offset
 
     // 24-bit base frequency
-#ifdef FREQUENCY_USA
+
+#if FREQUENCY == 915
+
     // 0x263000 * 24Mhz / 2^16 == 916.5Mhz
     FREQ2 = 0x26; FREQ1 = 0x30; FREQ0 = 0x00;
-#else
+
+#elif FREQUENCY == 868
+
     // 0x242E38 * 24Mhz / 2^16 == 868.333Mhz
     FREQ2 = 0x24; FREQ1 = 0x2E; FREQ0 = 0x38;
+
+#else
+#error "unknown FREQUENCY"
 #endif
 
     // CHANBW_E = 1, CHANBW_M = 1, DRATE_E = 9
@@ -86,14 +92,14 @@ void radio_init(void)
     PA_TABLE3 = 0x00; PA_TABLE2 = 0x52; PA_TABLE1 = 0x00; PA_TABLE0 = 0x00;
 }
 
-int radio_receive(uint8_t *buf, int buf_len)
+size_t radio_receive(uint8_t *buf, size_t len)
 {
     int n;
     uint8_t prev_test1 = TEST1;
 
-    TEST1 = 0x35;  // improve RX sensitivity
+    TEST1 = 0x35;  // improve RX sensitivity, per TI datasheet
     RFST = RFST_SRX;
-    for (n = 0; n < buf_len; ++n) {
+    for (n = 0; n < len; ++n) {
         while (!RFTXRXIF)
             nop();
         buf[n] = RFD;
@@ -104,4 +110,21 @@ int radio_receive(uint8_t *buf, int buf_len)
     RFST = RFST_SIDLE;
     TEST1 = prev_test1;
     return n;
+}
+
+void radio_transmit(const uint8_t *buf, size_t len)
+{
+    int n;
+    uint8_t prev_test1 = TEST1;
+
+    TEST1 = 0x31;  // per TI datasheet
+    RFST = RFST_STX;
+    for (n = 0; n < len; ++n) {
+        while (!RFTXRXIF)
+            nop();
+        TCON &= ~TCON_RFTXRXIF;
+        RFD = buf[n];
+    }
+    RFST = RFST_SIDLE;
+    TEST1 = prev_test1;
 }

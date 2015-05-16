@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "delay.h"
 
 void delay(uint16_t msec)
