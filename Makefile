@@ -2,12 +2,13 @@ CC = sdcc
 CPP = sdcpp
 AS = sdas8051
 
-BOARD = SRF_STICK
+FREQUENCY = 915
 BAUD_RATE = 115200
+BOARD = SRF_STICK
 
-DEFINES = -DBOARD=BOARD_$(BOARD) -DBAUD_RATE=$(BAUD_RATE)
+DEFINES = -DFREQUENCY=$(FREQUENCY) -DBAUD_RATE=$(BAUD_RATE) -DBOARD=BOARD_$(BOARD)
 INCLUDES =
-CODEFLAGS = --model-small --opt-code-speed
+CODEFLAGS = --model-small
 CFLAGS = $(DEFINES) $(INCLUDES) $(CODEFLAGS) -Wp,-Wall,-MD,$(@:%.rel=%.d),-MT,$@
 
 LDFLAGS = --out-fmt-ihx \
@@ -19,7 +20,7 @@ PROGRAMS = blinktest delaytest rxtest serialtest
 
 LIBRARY = modules.lib
 
-CFILES = clock.c delay.c led.c radio.c serial.c
+CFILES = 4b6b.c clock.c crc.c delay.c led.c radio.c serial.c
 
 all: $(PROGRAMS:%=%.hex)
 
