@@ -7,19 +7,19 @@
 
 void main(void)
 {
-    int counter = 0;
+	int counter = 0;
 
-    clock_init();
-    led_init();
-    serial_init();
+	clock_init();
+	led_init();
+	serial_init();
 
-    while (1) {
-        printf("Hello, world from CC1111! (%u)\r\n", ++counter);
-        blink(333, 3);
-    }
+	while (1) {
+		printf("Hello, world from CC1111! (%u)\r\n", ++counter);
+		blink(333, 3);
+	}
 }
 
 void putchar(char c)
 {
-    serial_putc(c);
+	serial_putc(c);
 }

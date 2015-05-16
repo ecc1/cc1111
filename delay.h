@@ -1,5 +1,5 @@
-#ifndef _DELAY_H_
-#define _DELAY_H_
+#ifndef _DELAY_H
+#define _DELAY_H
 
 #include <stdint.h>
 
@@ -7,4 +7,4 @@
 
 void delay(uint16_t ms);
 
-#endif  // _DELAY_H_
+#endif /* _DELAY_H */

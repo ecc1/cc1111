@@ -1,5 +1,5 @@
-#ifndef _LED_H_
-#define _LED_H_
+#ifndef _LED_H
+#define _LED_H
 
 #include <stdint.h>
 
@@ -10,4 +10,4 @@ void led_init(void);
 
 void blink(uint16_t period_ms, uint16_t count);
 
-#endif // _LED_H_
+#endif /* _LED_H */

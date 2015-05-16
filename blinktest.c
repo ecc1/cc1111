@@ -8,28 +8,28 @@
 
 void main(void)
 {
-    int state;
+	int state;
 
-    P1DIR |= (1 << 7) | (1 << 6) | (1 << 5);  // enable output
+	P1DIR |= (1 << 7) | (1 << 6) | (1 << 5);	// enable output
 
-    P1_7 = 0;
-    P1_6 = 0;
-    P1_5 = 0;
+	P1_7 = 0;
+	P1_6 = 0;
+	P1_5 = 0;
 
-    state = 0;
-    while (1) {
-        switch (state) {
-        case 0:
-            P1_7 ^= 1;
-            break;
-        case 1:
-            P1_6 ^= 1;
-            break;
-        case 2:
-            P1_5 ^= 1;
-            break;
-        }
-        state = (state + 1) % 3;
-        delay(250);
-    }
+	state = 0;
+	while (1) {
+		switch (state) {
+		case 0:
+			P1_7 ^= 1;
+			break;
+		case 1:
+			P1_6 ^= 1;
+			break;
+		case 2:
+			P1_5 ^= 1;
+			break;
+		}
+		state = (state + 1) % 3;
+		delay(250);
+	}
 }

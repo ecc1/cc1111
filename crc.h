@@ -1,5 +1,5 @@
-#ifndef _CRC_H_
-#define _CRC_H_
+#ifndef _CRC_H
+#define _CRC_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,4 +12,4 @@ uint8_t crc8(const uint8_t *buf, size_t len);
 
 uint16_t crc16(const uint8_t *buf, size_t len);
 
-#endif  // _CRC_H_
+#endif /* _CRC_H */

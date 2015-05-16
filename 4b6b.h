@@ -1,5 +1,5 @@
-#ifndef _4B6B_H_
-#define _4B6B_H_
+#ifndef _4B6B_H
+#define _4B6B_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,4 +21,4 @@ int decode_4b6b(const uint8_t *src, uint8_t *dst, size_t len);
 
 size_t decode_4b6b_length(size_t);
 
-#endif  // _4B6B_H_
+#endif /* _4B6B_H */

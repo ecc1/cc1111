@@ -12,43 +12,44 @@
 
 void print_bytes(const uint8_t *buf, size_t len)
 {
-    int i;
+	int i;
 
-    for (i = 0; i < len; ++i) {
-        printf("%02X ", buf[i]);
-        if ((i + 1) % 20 == 0)
-            printf("\r\n");
-    }
-    if (i % 20 != 0)
-        printf("\r\n");
+	for (i = 0; i < len; ++i) {
+		printf("%02X ", buf[i]);
+		if ((i + 1) % 20 == 0)
+			printf("\r\n");
+	}
+	if (i % 20 != 0)
+		printf("\r\n");
 }
 
 void main(void)
 {
-    static char __xdata packet[256], data[256];
+	static char __xdata packet[256], data[256];
 
-    clock_init();
-    led_init();
-    radio_init();
-    serial_init();
+	clock_init();
+	led_init();
+	radio_init();
+	serial_init();
 
-    while (1) {
-        int length, n;
+	while (1) {
+		int length, n;
 
-        length = radio_receive(packet, sizeof(packet));
-        printf("\r\nReceived %d-byte packet:\r\n", length);
-        print_bytes(packet, length);
+		length = radio_receive(packet, sizeof(packet));
+		printf("\r\nReceived %d-byte packet:\r\n", length);
+		print_bytes(packet, length);
 
-        n = decode_4b6b_length(length);
-        memset(data, 0, n);
-        if (decode_4b6b(packet, data, length) == 0)
-            printf("4b/6b decoded packet:\r\n");
-        else
-            printf("FAILED 4b/6b decoding:\r\n");
-        print_bytes(data, n);
-    }
+		n = decode_4b6b_length(length);
+		memset(data, 0, n);
+		if (decode_4b6b(packet, data, length) == 0)
+			printf("4b/6b decoded packet:\r\n");
+		else
+			printf("FAILED 4b/6b decoding:\r\n");
+		print_bytes(data, n);
+	}
 }
 
-void putchar(char c) {
-    serial_putc(c);
+void putchar(char c)
+{
+	serial_putc(c);
 }
