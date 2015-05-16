@@ -1,11 +1,62 @@
 #include "serial.h"
 
-#include "cc1111.h"
-#include "clock.h"
+// Based on AltOS cc1111/ao_serial.c
+
+#define FIFO_SIZE	64
+
+typedef struct {
+	uint8_t insert;
+	uint8_t remove;
+	char fifo[FIFO_SIZE];
+} fifo_t;
+
+#define fifo_empty(f)	((f).insert == (f).remove)
+
+#define fifo_full(f)	((((f).insert + 1) % FIFO_SIZE) == (f).remove)
+
+#define fifo_insert(f, c) do { \
+	(f).fifo[(f).insert] = (c); \
+	(f).insert = ((f).insert + 1) % FIFO_SIZE; \
+} while (0)
+
+#define fifo_remove(f, c) do { \
+	(c) = (f).fifo[(f).remove]; \
+	(f).remove = ((f).remove + 1) % FIFO_SIZE; \
+} while (0)
+
+static volatile __xdata fifo_t tx_fifo;
+static volatile uint8_t tx_started;
+
+void serial_tx_start(void)
+{
+	if (!fifo_empty(tx_fifo) && !tx_started) {
+		tx_started = 1;
+		fifo_remove(tx_fifo, U0DBUF);
+	}
+}
+
+void serial_tx_isr(void) __interrupt UTX0_VECTOR
+{
+	UTX0IF = 0;
+	tx_started = 0;
+	serial_tx_start();
+}
+
+void serial_putc(char c)
+{
+	int full;
+	do __critical {
+		full = fifo_full(tx_fifo);
+	} while (full);
+	__critical {
+		fifo_insert(tx_fifo, c);
+		serial_tx_start();
+	}
+}
 
 void serial_init(void)
 {
-	// set up UART0 using Alternative Location 1
+	// Set up UART0 using Alternative Location 1
 	PERCFG &= ~PERCFG_U0CFG_ALT_MASK;
 	PERCFG |= PERCFG_U0CFG_ALT_1;
 
@@ -41,15 +92,15 @@ void serial_init(void)
 		 UxUCR_PARITY_DISABLE |
 		 UxUCR_SPB_1_STOP_BIT | UxUCR_STOP_HIGH | UxUCR_START_LOW);
 
-	// select peripheral function rather than GPIO for TX on P0_3
+	// Select peripheral function rather than GPIO for TX on P0_3
 	// (not required for RX on P0_2)
 	P0SEL |= (1 << 3);
+
+	// Enable UART0 TX interrupt
+	IEN2 |= IEN2_UTX0IE;
+	EA = 1;
 }
 
-void serial_putc(char c)
+void serial_rx_isr(void) __interrupt URX0_VECTOR
 {
-	U0DBUF = c;
-	while (!UTX0IF)
-		nop();
-	UTX0IF = 0;
 }

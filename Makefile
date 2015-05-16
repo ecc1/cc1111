@@ -8,7 +8,7 @@ BOARD = SRF_STICK
 
 DEFINES = -DFREQUENCY=$(FREQUENCY) -DBAUD_RATE=$(BAUD_RATE) -DBOARD=BOARD_$(BOARD)
 INCLUDES =
-CODEFLAGS = --model-small
+CODEFLAGS = --model-small --opt-code-speed --stack-auto
 CFLAGS = $(DEFINES) $(INCLUDES) $(CODEFLAGS) -Wp,-Wall,-MD,$(@:%.rel=%.d),-MT,$@
 
 LDFLAGS = --out-fmt-ihx \
