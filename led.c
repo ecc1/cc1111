@@ -1,17 +1,31 @@
-#include <stdint.h>
-#include <cc1110.h>
+#include "led.h"
+
+#include "cc1111.h"
 #include "board.h"
 #include "delay.h"
 
-#define LED_DIR		dir_register(LED_PORT)
-#define LED_BIT		port_bit(LED_PORT, LED_PIN)
-
 void led_init(void)
 {
-    LED_DIR |= (1 << LED_PIN);  // set output for LED
+#if BOARD == BOARD_TI_DONGLE
+
+#   define LED_BIT		P1_1
+
+    P1DIR |= (1 << 1);
+    P1_1 = 0;
+
+#elif BOARD == BOARD_SRF_STICK
+
+#   define LED_BIT		P1_7
+
+    P1DIR |= (1 << 7) | (1 << 6) | (1 << 5);
+    P1_7 = 0; P1_6 = 0; P1_5 = 0;
+
+#else
+#error "unknown BOARD"
+#endif
 }
 
-void blink_once(uint16_t period_ms)
+static void blink_once(uint16_t period_ms)
 {
     uint16_t half = period_ms / 2;
     LED_BIT ^= 1;
