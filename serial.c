@@ -1,5 +1,7 @@
 #include "serial.h"
 
+#include "arch.h"
+
 // Based on AltOS cc1111/ao_serial.c
 
 #define FIFO_SIZE	64
@@ -42,16 +44,19 @@ void serial_tx_isr(void) __interrupt UTX0_VECTOR
 	serial_tx_start();
 }
 
-void serial_putc(char c)
+void serial_putc(char c) __critical
 {
-	int full;
-	do __critical {
-		full = fifo_full(tx_fifo);
-	} while (full);
-	__critical {
-		fifo_insert(tx_fifo, c);
-		serial_tx_start();
-	}
+	while (fifo_full(tx_fifo))
+		await_interrupt();
+	fifo_insert(tx_fifo, c);
+	serial_tx_start();
+}
+
+void putchar(char c)
+{
+	if (c == '\n')
+		serial_putc('\r');
+	serial_putc(c);
 }
 
 void serial_init(void)

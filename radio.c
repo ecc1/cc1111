@@ -1,7 +1,6 @@
 #include "radio.h"
 
-#include "cc1111.h"
-#include "clock.h"
+#include "arch.h"
 
 void radio_init(void)
 {
@@ -108,9 +107,12 @@ void radio_init(void)
 size_t radio_receive(uint8_t *buf, size_t len)
 {
 	int n;
+	uint8_t prev_test2 = TEST2;
 	uint8_t prev_test1 = TEST1;
 
-	TEST1 = 0x35;		// improve RX sensitivity, per TI datasheet
+	// improve RX sensitivity, per TI datasheet
+	TEST2 = RF_TEST2_RX_LOW_DATA_RATE_MAGIC;
+	TEST1 = RF_TEST1_RX_LOW_DATA_RATE_MAGIC;
 	RFST = RFST_SRX;
 	for (n = 0; n < len; ++n) {
 		while (!RFTXRXIF)
@@ -122,15 +124,18 @@ size_t radio_receive(uint8_t *buf, size_t len)
 	}
 	RFST = RFST_SIDLE;
 	TEST1 = prev_test1;
+	TEST2 = prev_test2;
 	return n;
 }
 
 void radio_transmit(const uint8_t *buf, size_t len)
 {
 	int n;
+	uint8_t prev_test2 = TEST2;
 	uint8_t prev_test1 = TEST1;
 
-	TEST1 = 0x31;		// per TI datasheet
+	TEST2 = RF_TEST2_NORMAL_MAGIC;
+	TEST1 = RF_TEST1_TX_MAGIC;
 	RFST = RFST_STX;
 	for (n = 0; n < len; ++n) {
 		while (!RFTXRXIF)
@@ -140,4 +145,5 @@ void radio_transmit(const uint8_t *buf, size_t len)
 	}
 	RFST = RFST_SIDLE;
 	TEST1 = prev_test1;
+	TEST2 = prev_test2;
 }

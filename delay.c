@@ -1,6 +1,6 @@
 #include "delay.h"
 
-#include "clock.h"
+#include "arch.h"
 
 void delay(uint16_t msec)
 {

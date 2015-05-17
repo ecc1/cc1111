@@ -1,6 +1,6 @@
 #include "clock.h"
 
-#include "cc1111.h"
+#include "arch.h"
 
 // Based on AltOS cc1111/ao_timer.c
 

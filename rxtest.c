@@ -17,10 +17,10 @@ void print_bytes(const uint8_t *buf, size_t len)
 	for (i = 0; i < len; ++i) {
 		printf("%02X ", buf[i]);
 		if ((i + 1) % 20 == 0)
-			printf("\r\n");
+			printf("\n");
 	}
 	if (i % 20 != 0)
-		printf("\r\n");
+		printf("\n");
 }
 
 void main(void)
@@ -36,20 +36,15 @@ void main(void)
 		int length, n;
 
 		length = radio_receive(packet, sizeof(packet));
-		printf("\r\nReceived %d-byte packet:\r\n", length);
+		printf("\nReceived %d-byte packet:\n", length);
 		print_bytes(packet, length);
 
 		n = decode_4b6b_length(length);
 		memset(data, 0, n);
 		if (decode_4b6b(packet, data, length) == 0)
-			printf("4b/6b decoded packet:\r\n");
+			printf("4b/6b decoded packet:\n");
 		else
-			printf("FAILED 4b/6b decoding:\r\n");
+			printf("FAILED 4b/6b decoding:\n");
 		print_bytes(data, n);
 	}
-}
-
-void putchar(char c)
-{
-	serial_putc(c);
 }

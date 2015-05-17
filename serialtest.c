@@ -11,12 +11,6 @@ void main(void)
 	clock_init();
 	serial_init();
 
-	while (1) {
-		printf("Hello, world from CC1111! (%u)\r\n", ++counter);
-	}
-}
-
-void putchar(char c)
-{
-	serial_putc(c);
+	while (1)
+		printf("Hello, world from CC1111! (%u)\n", ++counter);
 }

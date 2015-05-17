@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include "cc1111.h"
 
-#define nop()	__asm nop __endasm
-
 #define HZ	100
 
 void clock_init(void);
