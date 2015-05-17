@@ -49,49 +49,76 @@ void radio_init(void)
 
 	// CHANBW_E = 1, CHANBW_M = 1, DRATE_E = 9
 	// channel BW = 24MHz / (8 * (4 + CHANNBW_M) * 2^CHANBW_E) == 300kHz
-	MDMCFG4 = (1 << 6) | (1 << 4) | 0x9;
+	MDMCFG4 = (1 << RF_MDMCFG4_CHANBW_E_SHIFT) |
+		(1 << RF_MDMCFG4_CHANBW_M_SHIFT) |
+		(9 << RF_MDMCFG4_DRATE_E_SHIFT);
 
+	// DRATE_M = 102
 	// data rate = (256 + DRATE_M) * 2^DRATE_E * 24MHz / 2^28 == 16.4kHz
-	MDMCFG3 = 0x66;		// DRATE_M
+	MDMCFG3 = 0x66;
 
-	// enable DC blocking filter, ASK/OOK modulation,
-	// disable Manchester encoding, 30/32 sync word bits
-	MDMCFG2 = (0b011 << 4) | 0b011;
+	MDMCFG2 = RF_MDMCFG2_DEM_DCFILT_ON |
+		RF_MDMCFG2_MOD_FORMAT_ASK_OOK |
+		RF_MDMCFG2_SYNC_MODE_30_32;
 
-	// disable FEC, minimum preamble bytes = 16, CHANSPC_E = 2
-	MDMCFG1 = (0b110 << 4) | 0b10;
+	// CHANSPC_E = 2
+	MDMCFG1 = RF_MDMCFG1_FEC_DIS |
+		RF_MDMCFG1_NUM_PREAMBLE_16 |
+		(2 << RF_MDMCFG1_CHANSPC_E_SHIFT);
 
+	// CHANSPC_M = 26
 	// channel spacing
 	// (256 + CHANSPC_M) * 2^CHANSPC_E * 24MHz / 2^18 == 103.3KHz
-	MDMCFG0 = 0x1A;		// CHANSPC_M
+	MDMCFG0 = 0x1A;
 
-	MCSM2 = 0x07;		// (default)
-	MCSM1 = 0b11 << 4;	// (default)
+	MCSM2 = RF_MCSM2_RX_TIME_END_OF_PACKET;	// (default)
 
-	// calibrate when going from IDLE, 0dB RX attenuation
-	MCSM0 = (0b01 << 4) | (0b10 << 2) | 0b00;
+	MCSM1 = RF_MCSM1_CCA_MODE_RSSI_BELOW_UNLESS_RECEIVING;	// (default)
 
-	FOCCFG = (0b10 << 3) | (1 << 2) | 0b11;
+	MCSM0 = RF_MCSM0_FS_AUTOCAL_FROM_IDLE |
+		RF_MCSM0_MAGIC_3 |
+		RF_MCSM0_CLOSE_IN_RX_0DB;
 
-	BSCFG = (1 << 6) + (0b10 << 4) + (1 << 3);
+	FOCCFG = RF_FOCCFG_FOC_PRE_K_3K |
+		RF_FOCCFG_FOC_POST_K_PRE_K_OVER_2 |
+		RF_FOCCFG_FOC_LIMIT_BW_OVER_2;
 
-	AGCCTRL2 = 0b011;	// (default)
-	AGCCTRL1 = 1 << 6;	// (default)
-	AGCCTRL0 = (0b10 << 6) | (1 << 4) + 1;	// (default)
+	BSCFG = RF_BSCFG_BS_PRE_K_2K |
+		RF_BSCFG_BS_PRE_KP_3KP |
+		RF_BSCFG_BS_POST_KI_PRE_KI_OVER_2 |
+		RF_BSCFG_BS_LIMIT_0;
 
-	FREND1 = (1 << 6) | (1 << 4) | (1 << 2) + 0b10;	// (default)
+	AGCCTRL2 = RF_AGCCTRL2_MAX_DVGA_GAIN_ALL |
+		RF_AGCCTRL2_MAX_LNA_GAIN_0 |
+		RF_AGCCTRL2_MAGN_TARGET_33dB;	// (default)
 
-	// use PA_TABLE 2 for transmitting '1' in ASK (PA_TABLE 0 used for '0')
-	FREND0 = (1 << 4) | 0x2;
+	AGCCTRL1 = RF_AGCCTRL1_AGC_LNA_PRIORITY_1 |
+		RF_AGCCTRL1_CARRIER_SENSE_REL_THR_DISABLE |
+		RF_AGCCTRL1_CARRIER_SENSE_ABS_THR_0DB;	// (default)
+
+	AGCCTRL0 = RF_AGCCTRL0_HYST_LEVEL_MEDIUM |
+		RF_AGCCTRL0_WAIT_TIME_16 |
+		RF_AGCCTRL0_AGC_FREEZE_NORMAL |
+		RF_AGCCTRL0_FILTER_LENGTH_16;	// (default)
+
+	FREND1 = (1 << RF_FREND1_LNA_CURRENT_SHIFT) |
+		(1 << RF_FREND1_LNA2MIX_CURRENT_SHIFT) |
+		(1 << RF_FREND1_LODIV_BUF_CURRENT_RX_SHIFT) |
+		(2 << RF_FREND1_MIX_CURRENT_SHIFT);	// (default)
+
+	// use PA_TABLE 2 for transmitting '1' in ASK
+	// (PA_TABLE 0 is always used for '0')
+	FREND0 = (1 << RF_FREND0_LODIV_BUF_CURRENT_TX_SHIFT) |
+		(2 << RF_FREND0_PA_POWER_SHIFT);
 
 	FSCAL3 = (0b11 << 6) | (0b10 << 4) | 0b1001;
 	FSCAL2 = (1 << 5) | 0b01010;	// VCO high
 	FSCAL1 = 0x00;
 	FSCAL0 = 0x1F;
 
-	TEST2 = 0x88;			// (default)
-	TEST1 = 0x31;
-	TEST0 = (0b10 << 2) + 1;	// disable VCO selection calibration
+	TEST2 = RF_TEST2_NORMAL_MAGIC;	// (default)
+	TEST1 = RF_TEST1_TX_MAGIC;
+	TEST0 = (0b10 << 2) | 1;	// disable VCO selection calibration
 
 	// Power amplifier output settings
 	PA_TABLE7 = 0x00;
