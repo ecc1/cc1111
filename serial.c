@@ -103,7 +103,6 @@ void serial_init(void)
 
 	// Enable UART0 TX interrupt
 	IEN2 |= IEN2_UTX0IE;
-	EA = 1;
 }
 
 void serial_rx_isr(void) __interrupt URX0_VECTOR

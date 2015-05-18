@@ -10,6 +10,7 @@ void main(void)
 	clock_init();
 	led_init();
 	timer_init();
+	EA = 1;
 
 	start = time();
 	while (1) {

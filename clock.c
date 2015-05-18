@@ -44,9 +44,6 @@ void timer_init(void)
 
 	// enable timer 1 in modulo mode, dividing by 8
 	T1CTL = T1CTL_MODE_MODULO | T1CTL_DIV_8;
-
-	// global interrupt enable
-	EA = 1;
 }
 
 void clock_init(void)
