@@ -5,6 +5,7 @@
 #include "arch.h"
 #include "4b6b.h"
 #include "clock.h"
+#include "crc.h"
 #include "led.h"
 #include "radio.h"
 #include "serial.h"
@@ -24,7 +25,7 @@ void print_bytes(const uint8_t *buf, size_t len)
 
 void main(void)
 {
-	static char __xdata packet[256], data[256];
+	static uint8_t __xdata packet[256], data[256];
 
 	clock_init();
 	led_init();
@@ -34,7 +35,8 @@ void main(void)
 	enable_interrupts();
 
 	while (1) {
-		int length, n;
+		int length, n, err;
+		uint8_t crc;
 
 		length = radio_receive(packet, sizeof(packet));
 		for (n = 0; n < length; ++n) {
@@ -48,10 +50,13 @@ void main(void)
 
 		n = decode_4b6b_length(length);
 		memset(data, 0, n);
-		if (decode_4b6b(packet, data, length) == 0)
-			printf("4b/6b decoded packet:\n");
-		else
-			printf("FAILED 4b/6b decoding:\n");
+		err = decode_4b6b(packet, data, length);
+		printf("4b/6b decoding%s:\n", err ? " FAILED" : "");
 		print_bytes(data, n);
+		if (err || n < 2)
+			continue;
+		crc = crc8(data, n - 1);
+		if (data[n - 1] != crc)
+			printf("CRC failed, should be %02X\n", crc);
 	}
 }
