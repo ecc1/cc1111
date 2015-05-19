@@ -1,11 +1,10 @@
-// Poll for Medtronic packets and print them over the UART
+// Listen for Medtronic packets and print them over the UART
 
 #include <stdio.h>
 #include <string.h>
+#include "arch.h"
 #include "4b6b.h"
-#include "cc1111.h"
 #include "clock.h"
-#include "delay.h"
 #include "led.h"
 #include "radio.h"
 #include "serial.h"
@@ -32,10 +31,18 @@ void main(void)
 	radio_init();
 	serial_init();
 
+	enable_interrupts();
+
 	while (1) {
 		int length, n;
 
 		length = radio_receive(packet, sizeof(packet));
+		for (n = 0; n < length; ++n) {
+			if (packet[n] == 0x00) {
+				length = n;
+				break;
+			}
+		}
 		printf("\nReceived %d-byte packet:\n", length);
 		print_bytes(packet, length);
 
