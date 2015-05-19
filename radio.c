@@ -215,8 +215,6 @@ size_t radio_receive(uint8_t *buf, size_t len)
 void radio_transmit(const uint8_t *buf, size_t len)
 {
 	int n;
-	uint8_t prev_test2 = TEST2;
-	uint8_t prev_test1 = TEST1;
 
 	TEST2 = RF_TEST2_NORMAL_MAGIC;
 	TEST1 = RF_TEST1_TX_MAGIC;
@@ -228,6 +226,4 @@ void radio_transmit(const uint8_t *buf, size_t len)
 		RFD = buf[n];
 	}
 	RFST = RFST_SIDLE;
-	TEST1 = prev_test1;
-	TEST2 = prev_test2;
 }
