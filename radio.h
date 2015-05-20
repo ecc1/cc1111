@@ -6,8 +6,6 @@
 
 #include "cc1111.h"
 
-// Configure radio for Medtronic RF
-
 void radio_init(void);
 
 size_t radio_receive(uint8_t *buf, size_t len);
