@@ -6,6 +6,8 @@
 
 void recv_packet(void);
 
+void send_packet(uint8_t *buf, size_t len);
+
 void print_bytes(const uint8_t *buf, size_t len);
 
 #endif /* _DEBUG_H */

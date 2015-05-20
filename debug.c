@@ -19,9 +19,11 @@ void print_bytes(const uint8_t *buf, size_t len)
 		printf("\n");
 }
 
+static uint8_t __xdata packet[256];
+
 void recv_packet(void)
 {
-	static uint8_t __xdata packet[256], data[256];
+	static uint8_t __xdata data[256];
 	int length, n, err;
 	uint8_t crc;
 
@@ -45,4 +47,18 @@ void recv_packet(void)
 	crc = crc8(data, n - 1);
 	if (data[n - 1] != crc)
 		printf("CRC should be %02X\n", crc);
+}
+
+void send_packet(uint8_t *buf, size_t len)
+{
+	int n;
+
+	buf[len - 1] = crc8(buf, len - 1);
+	printf("\nTransmitting packet:\n");
+	print_bytes(buf, len);
+	encode_4b6b(buf, packet, len);
+	printf("4b/6b encoding:\n");
+	n = encode_4b6b_length(len);
+	print_bytes(packet, n);
+	radio_transmit(packet, n);
 }
