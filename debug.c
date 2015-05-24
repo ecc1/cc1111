@@ -27,13 +27,14 @@ void recv_packet(void)
 	int length, n, err;
 	uint8_t crc;
 
-	length = radio_receive(packet, sizeof(packet));
-	for (n = 0; n < length; ++n) {
-		if (packet[n] == 0x00) {
-			length = n;
+	radio_receive();
+	for (n = 0; n < sizeof(packet); ++n) {
+		int c = radio_getc();
+		if (c == -1)
 			break;
-		}
+		packet[n] = c;
 	}
+	length = n;
 	printf("\nReceived %d-byte packet:\n", length);
 	print_bytes(packet, length);
 
