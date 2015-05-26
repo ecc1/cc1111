@@ -5,18 +5,23 @@ AS = sdas8051
 FREQUENCY = 915
 BAUD_RATE = 115200
 BOARD = SRF_STICK
+VERBOSE = 0
 
-DEFINES = -DFREQUENCY=$(FREQUENCY) -DBAUD_RATE=$(BAUD_RATE) -DBOARD=BOARD_$(BOARD)
-INCLUDES =
+DEFINES = \
+	-DBOARD=BOARD_$(BOARD) \
+	-DFREQUENCY=$(FREQUENCY) \
+	-DBAUD_RATE=$(BAUD_RATE) \
+	-DVERBOSE=$(VERBOSE)
 CODEFLAGS = --model-small --opt-code-speed --stack-auto
-CFLAGS = $(DEFINES) $(INCLUDES) $(CODEFLAGS) -Wp,-Wall,-MD,$(@:%.rel=%.d),-MT,$@
+CFLAGS = $(DEFINES) $(CODEFLAGS) -Wp,-Wall,-MD,$(@:%.rel=%.d),-MT,$@
 
-LDFLAGS = --out-fmt-ihx \
-	  --code-loc 0x000 --code-size 0x8000 \
-	  --xram-loc 0xF000 --xram-size 0xF00 \
-	  --iram-size 0x100
+LDFLAGS = \
+	--out-fmt-ihx \
+	--code-loc 0x000 --code-size 0x8000 \
+	--xram-loc 0xF000 --xram-size 0xF00 \
+	--iram-size 0x100
 
-PROGRAMS = blinktest delaytest rxtest serialtest timetest
+PROGRAMS = blinktest delaytest rxtest serialtest timetest txtest
 
 LIBRARY = modules.lib
 
@@ -27,14 +32,14 @@ all: $(PROGRAMS:%=%.hex)
 OBJS = $(CFILES:%.c=%.rel)
 
 $(LIBRARY): $(OBJS)
-ifdef VERBOSE
+ifdef V
 	sdcclib $@ $(OBJS)
 else
 	@echo AR $@ && sdcclib $@ $(OBJS)
 endif
 
 %.hex: %.rel $(LIBRARY)
-ifdef VERBOSE
+ifdef V
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBRARY)
 else
 	@echo LD $@ && $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBRARY)
@@ -44,7 +49,7 @@ endif
 .SECONDARY: $(PROGRAMS:%=%.rel)
 
 %.rel: %.c
-ifdef VERBOSE
+ifdef V
 	$(CC) -c $(CFLAGS) -o $@ $<
 else
 	@echo CC $< && $(CC) -c $(CFLAGS) -o $@ $<
@@ -53,7 +58,7 @@ endif
 BYPRODUCTS = *.asm *.d *.lib *.lk *.lnk *.lst *.map *.mem *.rel *.rst *.sym *~
 
 clean:
-	rm -f $(if $(VERBOSE),-v) $(BYPRODUCTS)
+	rm -f $(if $V,-v) $(BYPRODUCTS)
 
 DEPS = $(PROGRAMS:%=%.d) $(CFILES:%.c=%.d)
 
