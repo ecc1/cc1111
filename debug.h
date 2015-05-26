@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void recv_packet(void);
+uint8_t *recv_packet(int timeout);
 
 void send_packet(uint8_t *buf, size_t len);
 
