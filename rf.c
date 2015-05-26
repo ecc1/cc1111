@@ -106,10 +106,10 @@ void rf_init(void)
 		(1 << RF_FREND1_LODIV_BUF_CURRENT_RX_SHIFT) |
 		(2 << RF_FREND1_MIX_CURRENT_SHIFT);	// (default)
 
-	// use PA_TABLE 2 for transmitting '1' in ASK
+	// use PA_TABLE 1 for transmitting '1' in ASK
 	// (PA_TABLE 0 is always used for '0')
 	FREND0 = (1 << RF_FREND0_LODIV_BUF_CURRENT_TX_SHIFT) |
-		(2 << RF_FREND0_PA_POWER_SHIFT);
+		(1 << RF_FREND0_PA_POWER_SHIFT);
 
 	FSCAL3 = (0b11 << 6) | (0b10 << 4) | 0b1001;
 	FSCAL2 = (1 << 5) | 0b01010;	// VCO high
@@ -121,12 +121,17 @@ void rf_init(void)
 	TEST0 = (0b10 << 2) | 1;	// disable VCO selection calibration
 
 	// Power amplifier output settings
+	// (see Table 72 on page 207 of the datasheet)
 	PA_TABLE7 = 0x00;
 	PA_TABLE6 = 0x00;
 	PA_TABLE5 = 0x00;
 	PA_TABLE4 = 0x00;
 	PA_TABLE3 = 0x00;
-	PA_TABLE2 = 0x52;
-	PA_TABLE1 = 0x00;
+	PA_TABLE2 = 0x00;
+#if FREQUENCY == 915
+	PA_TABLE1 = 0xC0;	// 10dBm, 36mA
+#elif FREQUENCY == 868
+	PA_TABLE1 = 0xC2;	// 10dBm, 36mA
+#endif
 	PA_TABLE0 = 0x00;
 }
