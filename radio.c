@@ -1,92 +1,119 @@
 #include "radio.h"
 
 #include "arch.h"
+#include "clock.h"
 #include "rf.h"
 
-void radio_init(void)
-{
-	rf_init();
-}
+uint8_t *packet_buf;
+size_t packet_len;
+size_t packet_pos;
 
-#define FIFO_SIZE	1024
+volatile uint8_t packet_done;
 
-typedef struct {
-	uint16_t insert;
-	uint16_t remove;
-	char fifo[FIFO_SIZE];
-} fifo_t;
-
-#define fifo_empty(f)	((f).insert == (f).remove)
-
-#define fifo_full(f)	((((f).insert + 1) % FIFO_SIZE) == (f).remove)
-
-#define fifo_insert(f, c) do { \
-	(f).fifo[(f).insert] = (c); \
-	(f).insert = ((f).insert + 1) % FIFO_SIZE; \
+#define buffer_init(buf, len) do { \
+	packet_buf = (buf); \
+	packet_len = (len); \
+	packet_pos = 0; \
+	packet_done = 0; \
 } while (0)
 
-#define fifo_remove(f, c) do { \
-	(c) = (f).fifo[(f).remove];	   \
-	(f).remove = ((f).remove + 1) % FIFO_SIZE; \
-} while (0)
+#define end_of_buffer()	(packet_pos == packet_len)
 
-static volatile __xdata fifo_t rx_fifo;
+uint8_t tx_pad;
+
+enum { IDLE, RECEIVING, TRANSMITTING } radio_state;
 
 void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR
 {
 	uint8_t c;
 
-	c = RFD;
-	if (c == 0x00)
-		RFTXRXIE = 0;
-	else if (!fifo_full(rx_fifo))
-		fifo_insert(rx_fifo, c);
-}
-
-int radio_getc(void) __critical
-{
-	uint8_t c;
-
-	while (fifo_empty(rx_fifo)) {
-		if (!RFTXRXIE)
-			return -1;
-		await_interrupt();
+	switch (radio_state) {
+	case RECEIVING:
+		c = RFD;
+		if (packet_pos != packet_len && c != 0x00) {
+			packet_buf[packet_pos++] = c;
+			return;
+		}
+		break;
+	case TRANSMITTING:
+		if (packet_pos != packet_len) {
+			RFD = packet_buf[packet_pos++];
+			return;
+		}
+		// Pad end of packet with 2 null bytes
+		switch (tx_pad) {
+		case 1:
+			tx_pad = 0;
+			break;
+		case 0:
+			tx_pad = 2;
+			RFD = 0x00;
+			return;
+		default:
+			--tx_pad;
+			RFD = 0x00;
+			return;
+		}
+		break;
 	}
-	fifo_remove(rx_fifo, c);
-	return c;
+	packet_done = 1;
+	RFTXRXIE = 0;
 }
 
-void radio_receive(void)
+size_t radio_receive(uint8_t *buf, size_t len, uint16_t timeout)
 {
-	RFST = RFST_SIDLE;
-	while ((RF_MARCSTATE & RF_MARCSTATE_MASK) != RF_MARCSTATE_IDLE)
-		nop();
+	uint16_t deadline = timeout ? time() + timeout : 0;
+
+	buffer_init(buf, len);
 
 	// improve RX sensitivity, per TI datasheet
 	TEST2 = RF_TEST2_RX_LOW_DATA_RATE_MAGIC;
 	TEST1 = RF_TEST1_RX_LOW_DATA_RATE_MAGIC;
 
+	radio_state = RECEIVING;
 	RFST = RFST_SRX;
 	while ((RF_MARCSTATE & RF_MARCSTATE_MASK) != RF_MARCSTATE_RX)
 		nop();
 
 	// Enable radio interrupts
-	RFTXRXIF = 0;
 	RFTXRXIE = 1;
+
+	while (!packet_done && (!deadline || time() <= deadline))
+		idle();
+
+	radio_state = IDLE;
+	RFST = RFST_SIDLE;
+	while ((RF_MARCSTATE & RF_MARCSTATE_MASK) != RF_MARCSTATE_IDLE)
+		nop();
+
+	return packet_pos;
 }
 
-void radio_transmit(const uint8_t *buf, size_t len)
+void radio_transmit(uint8_t *buf, size_t len)
 {
-	int n;
+	buffer_init(buf, len);
 
 	TEST2 = RF_TEST2_NORMAL_MAGIC;
 	TEST1 = RF_TEST1_TX_MAGIC;
+
+	radio_state = TRANSMITTING;
 	RFST = RFST_STX;
-	for (n = 0; n < len; ++n) {
-		while (!RFTXRXIF)
-			nop();
-		RFTXRXIF = 0;
-		RFD = buf[n];
-	}
+	while ((RF_MARCSTATE & RF_MARCSTATE_MASK) != RF_MARCSTATE_TX)
+		nop();
+
+	// Enable radio interrupts
+	RFTXRXIE = 1;
+
+	while (!packet_done)
+		idle();
+
+	radio_state = IDLE;
 	RFST = RFST_SIDLE;
+	while ((RF_MARCSTATE & RF_MARCSTATE_MASK) != RF_MARCSTATE_IDLE)
+		nop();
+}
+
+void radio_init(void)
+{
+	rf_init();
 }

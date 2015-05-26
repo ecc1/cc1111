@@ -13,9 +13,10 @@ void main(void)
 	led_init();
 	radio_init();
 	serial_init();
+	timer_init();
 
 	enable_interrupts();
 
 	while (1)
-		recv_packet();
+		recv_packet(0);
 }

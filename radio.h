@@ -8,11 +8,9 @@
 
 void radio_init(void);
 
-void radio_receive(void);
+size_t radio_receive(uint8_t *buf, size_t len, uint16_t timeout);
 
-int radio_getc(void);
-
-void radio_transmit(const uint8_t *buf, size_t len);
+void radio_transmit(uint8_t *buf, size_t len);
 
 void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR;
 
