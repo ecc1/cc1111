@@ -19,8 +19,6 @@ volatile uint8_t packet_done;
 
 #define end_of_buffer()	(packet_pos == packet_len)
 
-uint8_t tx_pad;
-
 enum { IDLE, RECEIVING, TRANSMITTING } radio_state;
 
 void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR
@@ -28,6 +26,8 @@ void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR
 	uint8_t c;
 
 	switch (radio_state) {
+	case IDLE:
+		return;
 	case RECEIVING:
 		c = RFD;
 		if (packet_pos != packet_len && c != 0x00) {
@@ -38,20 +38,6 @@ void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR
 	case TRANSMITTING:
 		if (packet_pos != packet_len) {
 			RFD = packet_buf[packet_pos++];
-			return;
-		}
-		// Pad end of packet with 2 null bytes
-		switch (tx_pad) {
-		case 1:
-			tx_pad = 0;
-			break;
-		case 0:
-			tx_pad = 2;
-			RFD = 0x00;
-			return;
-		default:
-			--tx_pad;
-			RFD = 0x00;
 			return;
 		}
 		break;
@@ -91,6 +77,10 @@ size_t radio_receive(uint8_t *buf, size_t len, uint16_t timeout)
 
 void radio_transmit(uint8_t *buf, size_t len)
 {
+	// Pad end of packet with 2 null bytes
+	buf[len++] = 0x00;
+	buf[len++] = 0x00;
+
 	buffer_init(buf, len);
 
 	TEST2 = RF_TEST2_NORMAL_MAGIC;

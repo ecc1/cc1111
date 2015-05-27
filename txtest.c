@@ -21,7 +21,8 @@
 #define PUMP_ID_2	(PDIGIT(2) << 4 | PDIGIT(3))
 #define PUMP_ID_3	(PDIGIT(4) << 4 | PDIGIT(5))
 
-char __xdata command[7];
+#define COMMAND_SIZE	7
+char __xdata command[COMMAND_SIZE + 2];	// include padding
 
 #define DEVICE_PUMP	0xA7
 
@@ -51,7 +52,7 @@ void main(void)
 
 	command[4] = WAKE_UP;
 	for (n = 0; n < retries; ++n) {
-		send_packet(command, sizeof(command));
+		send_packet(command, COMMAND_SIZE);
 		p = recv_packet(3);
 		if (p && p[4] == ACK) {
 			printf("ACK after %d wakeups\n", n);
@@ -64,7 +65,7 @@ void main(void)
 
 	command[4] = GET_PUMP_MODEL;
 	for (n = 0; n < 10; ++n) {
-		send_packet(command, sizeof(command));
+		send_packet(command, COMMAND_SIZE);
 		p = recv_packet(25);
 		if (p && p[4] == GET_PUMP_MODEL) {
 			printf("Pump model: %c%c%c\n", p[7], p[8], p[9]);
@@ -75,7 +76,7 @@ void main(void)
 
 	command[4] = GET_BATTERY;
 	for (n = 0; n < 10; ++n) {
-		send_packet(command, sizeof(command));
+		send_packet(command, COMMAND_SIZE);
 		p = recv_packet(25);
 		if (p && p[4] == GET_BATTERY) {
 			printf("Battery: %d.%02dV\n", p[8] / 100, p[8] % 100);
