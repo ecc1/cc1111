@@ -46,7 +46,7 @@ static uint8_t __xdata packet[256];
 uint8_t *recv_packet(int timeout)
 {
 	static uint8_t __xdata data[256];
-	int length, n, err;
+	int length, n;
 	uint8_t crc;
 
 	length = radio_receive(packet, sizeof(packet), timeout);
@@ -62,21 +62,20 @@ uint8_t *recv_packet(int timeout)
 	printf("Received %d-byte packet:\n", length);
 	print_bytes(packet, length);
 #endif
-	n = decode_4b6b_length(length);
-	memset(data, 0, n);
-	err = decode_4b6b(packet, data, length);
+	memset(data, 0, sizeof(data));
+	n = decode_4b6b(packet, data, length);
 #if VERBOSE
-	printf("4b/6b decoding%s:\n", err ? " FAILED" : "");
+	printf("4b/6b decoding%s:\n", n == -1 ? " FAILED" : "");
 #else
 	print_time();
-	if (err) {
+	if (n == -1) {
 		printf("4b/6b decoding failed\n");
 		return 0;
 	}
 	printf("< ");
 #endif
 	print_bytes(data, n);
-	if (err || n < 2)
+	if (n < 2)
 		return 0;
 	crc = crc8(data, n - 1);
 	if (data[n - 1] != crc)
@@ -92,16 +91,14 @@ void send_packet(uint8_t *buf, size_t len)
 	print_time();
 #if VERBOSE
 	printf("Transmitting packet:\n");
-	print_bytes(buf, len);
-	encode_4b6b(buf, packet, len);
-	printf("4b/6b encoding:\n");
-	n = encode_4b6b_length(len);
-	print_bytes(packet, n);
 #else
 	printf("> ");
+#endif
 	print_bytes(buf, len);
-	encode_4b6b(buf, packet, len);
-	n = encode_4b6b_length(len);
+	n = encode_4b6b(buf, packet, len);
+#if VERBOSE
+	printf("4b/6b encoding:\n");
+	print_bytes(packet, n);
 #endif
 	radio_transmit(packet, n);
 }

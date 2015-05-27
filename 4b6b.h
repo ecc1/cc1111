@@ -5,20 +5,16 @@
 #include <stdint.h>
 
 // Encode bytes using 4b/6b encoding.
+// Encoding n bytes produces 3 * (n / 2) + 2 * (n % 2) output bytes.
+// Return number of bytes written to dst.
 
-void encode_4b6b(const uint8_t *src, uint8_t *dst, size_t len);
-
-// Number of bytes written to destination when encoding len bytes.
-
-size_t encode_4b6b_length(size_t);
+int encode_4b6b(const uint8_t *src, uint8_t *dst, size_t len);
 
 // Decode bytes using 4b/6b encoding.
-// Return 0 if successful, or -1 if invalid input was encountered.
+// Decoding n bytes produces 2 * (n / 3) + (n % 3) / 2 output bytes.
+// Return number of bytes written to dst if successful,
+// or -1 if invalid input was encountered.
 
 int decode_4b6b(const uint8_t *src, uint8_t *dst, size_t len);
-
-// Number of bytes written to destination when decoding len bytes.
-
-size_t decode_4b6b_length(size_t);
 
 #endif /* _4B6B_H */

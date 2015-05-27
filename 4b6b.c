@@ -12,7 +12,8 @@ static const uint8_t encode_4b[16] = {
 	0x2C, 0x0D, 0x0E, 0x1C,
 };
 
-void encode_4b6b(const uint8_t *src, uint8_t *dst, size_t len)
+
+int encode_4b6b(const uint8_t *src, uint8_t *dst, size_t len)
 {
 	int i, n;
 
@@ -33,14 +34,10 @@ void encode_4b6b(const uint8_t *src, uint8_t *dst, size_t len)
 
 		uint8_t a = encode_4b[HI(4, x)], b = encode_4b[LO(4, x)];
 
-		dst[n] = (a << 2) | HI(4, b);
-		dst[n + 1] = (LO(4, b) << 4) | 0b0101;	// pad
+		dst[n++] = (a << 2) | HI(4, b);
+		dst[n++] = (LO(4, b) << 4) | 0b0101;	// pad
 	}
-}
-
-size_t encode_4b6b_length(size_t len)
-{
-	return 3 * (len / 2) + 2 * (len % 2);
+	return n;
 }
 
 // Inverse of encode_4b table, with 0xFF indicating an undefined value.
@@ -91,14 +88,9 @@ int decode_4b6b(const uint8_t *src, uint8_t *dst, size_t len)
 		if (a == 0xFF || b == 0xFF)
 			return -1;
 
-		dst[n] = (a << 4) | b;
+		dst[n++] = (a << 4) | b;
 	} else if (i == len - 1) {
 		return -1;	// shouldn't happen
 	}
-	return 0;
-}
-
-size_t decode_4b6b_length(size_t len)
-{
-	return 2 * (len / 3) + (len % 3) / 2;
+	return n;
 }

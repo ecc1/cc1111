@@ -64,18 +64,19 @@ int main(void)
 
 	printf("Encode test #1:\n");
 	len = sizeof(enc_test_1);
-	encode_4b6b(enc_test_1, result, len);
-	print_bytes(result, encode_4b6b_length(len));
+	n = encode_4b6b(enc_test_1, result, len);
+	print_bytes(result, n);
 
 	printf("Encode test #2:\n");
 	len = sizeof(enc_test_2);
-	encode_4b6b(enc_test_2, result, len);
-	print_bytes(result, encode_4b6b_length(len));
+	n = encode_4b6b(enc_test_2, result, len);
+	print_bytes(result, n);
 
 	printf("Decode test #1:\n");
 	len = sizeof(dec_test_1);
-	if (decode_4b6b(dec_test_1, result, len) == 0) {
-		print_bytes(result, decode_4b6b_length(len));
+	n = decode_4b6b(dec_test_1, result, len);
+	if (n >= 0) {
+		print_bytes(result, n);
 	} else {
 		printf("Decoding error!\n");
 		return 1;
@@ -83,24 +84,20 @@ int main(void)
 
 	printf("Decode test #2:\n");
 	len = sizeof(dec_test_2);
-	if (decode_4b6b(dec_test_2, result, len) == 0) {
-		print_bytes(result, decode_4b6b_length(len));
+	n = decode_4b6b(dec_test_2, result, len);
+	if (n >= 0) {
+		print_bytes(result, n);
 	} else {
 		printf("Decoding error!\n");
 		return 1;
 	}
 
 	printf("Inverse test:\n");
-	len = 128;
-	n = encode_4b6b_length(len);
-	if (decode_4b6b_length(n) != len) {
-		printf("Decode length != %d\n", len);
-		return 1;
-	}
 	for (i = 0; i < num_tests; ++i) {
 		randomly_fill(test, 128);
-		encode_4b6b(test, tmp, 128);
-		if (decode_4b6b(tmp, result, n) == -1) {
+		n = encode_4b6b(test, tmp, 128);
+		len = decode_4b6b(tmp, result, n);
+		if (len != 128) {
 			printf("Decoding error!\n");
 			return 1;
 		}
