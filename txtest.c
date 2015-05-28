@@ -6,6 +6,7 @@
 #include "crc.h"
 #include "debug.h"
 #include "delay.h"
+#include "dma.h"
 #include "led.h"
 #include "pump_id.h"
 #include "radio.h"
@@ -22,7 +23,7 @@
 #define PUMP_ID_3	(PDIGIT(4) << 4 | PDIGIT(5))
 
 #define COMMAND_SIZE	7
-__xdata char command[COMMAND_SIZE + 2];	// include padding
+__xdata uint8_t command[COMMAND_SIZE + 1];	// include padding
 
 #define DEVICE_PUMP	0xA7
 
@@ -38,6 +39,7 @@ void main(void)
 	uint8_t *p;
 
 	clock_init();
+	dma_init();
 	led_init();
 	radio_init();
 	serial_init();

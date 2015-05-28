@@ -10,11 +10,13 @@ void radio_init(void);
 
 size_t radio_receive(uint8_t *buf, size_t len, uint16_t timeout);
 
-// WARNING: caller's buffer must be at least 2 bytes longer than len
-// because radio_transmit stores null bytes in buf[len] and buf[len+1]
+// WARNING: radio_transmit writes a null byte to buf[len]
+// so buf must be at least len+1 bytes
 
 void radio_transmit(uint8_t *buf, size_t len);
 
 void radio_txrx_isr(void) __interrupt RFTXRX_VECTOR;
+
+void radio_rf_isr(void) __interrupt RF_VECTOR;
 
 #endif /* _RADIO_H */

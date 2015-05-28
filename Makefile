@@ -25,7 +25,7 @@ PROGRAMS = blinktest delaytest rxtest serialtest timetest txtest
 
 LIBRARY = modules.lib
 
-CFILES = 4b6b.c clock.c crc.c debug.c delay.c led.c radio.c rf.c serial.c
+CFILES = 4b6b.c clock.c crc.c debug.c delay.c dma.c led.c radio.c rf.c serial.c
 
 all: $(PROGRAMS:%=%.hex)
 
