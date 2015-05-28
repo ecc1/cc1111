@@ -26,7 +26,7 @@ typedef struct {
 	(f).remove = ((f).remove + 1) % FIFO_SIZE; \
 } while (0)
 
-static volatile __xdata fifo_t tx_fifo;
+__xdata static volatile fifo_t tx_fifo;
 static volatile uint8_t tx_started;
 
 void serial_tx_start(void)

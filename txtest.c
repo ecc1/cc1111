@@ -22,7 +22,7 @@
 #define PUMP_ID_3	(PDIGIT(4) << 4 | PDIGIT(5))
 
 #define COMMAND_SIZE	7
-char __xdata command[COMMAND_SIZE + 2];	// include padding
+__xdata char command[COMMAND_SIZE + 2];	// include padding
 
 #define DEVICE_PUMP	0xA7
 

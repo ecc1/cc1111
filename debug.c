@@ -41,11 +41,11 @@ void print_time(void)
 	printf("%03d.%02d ", s, r);
 }
 
-static uint8_t __xdata packet[256];
+__xdata static uint8_t packet[256];
 
 uint8_t *recv_packet(int timeout)
 {
-	static uint8_t __xdata data[256];
+	__xdata static uint8_t data[256];
 	int length, n;
 	uint8_t crc;
 
