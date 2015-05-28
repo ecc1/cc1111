@@ -19,4 +19,11 @@
 	disable_interrupts(); \
 } while (0)
 
+// store a 16-bit value into a pair of registers defined as <name>{H,L}
+
+#define set_word(name, val)	do { \
+	name##H = ((uint16_t) (val)) >> 8;	\
+	name##L = ((uint16_t) (val)) & 0xFF;	\
+} while (0)
+
 #endif /* _ARCH_H */

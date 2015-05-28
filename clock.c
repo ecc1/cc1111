@@ -26,8 +26,7 @@ void timer_init(void)
 	T1CTL = 0;
 
 	// set the sample rate */
-	T1CC0H = modulus >> 8;
-	T1CC0L = modulus & 0xFF;
+	set_word(T1CC0, modulus);
 
 	T1CCTL0 = T1CCTL_MODE_COMPARE;
 	T1CCTL1 = 0;
