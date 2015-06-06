@@ -29,14 +29,14 @@ void rf_init(void)
 
 #if FREQUENCY == 915
 
-	// 0x263000 * 24Mhz / 2^16 == 916.5Mhz
+	// 0x263148 * 24MHz / 2^16 == 916.62MHz
 	FREQ2 = 0x26;
-	FREQ1 = 0x30;
-	FREQ0 = 0x00;
+	FREQ1 = 0x31;
+	FREQ0 = 0x48;
 
 #elif FREQUENCY == 868
 
-	// 0x242E38 * 24Mhz / 2^16 == 868.333Mhz
+	// 0x242E38 * 24MHz / 2^16 == 868.333MHz
 	FREQ2 = 0x24;
 	FREQ1 = 0x2E;
 	FREQ0 = 0x38;
