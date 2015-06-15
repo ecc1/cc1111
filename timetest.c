@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "arch.h"
 #include "clock.h"
 #include "led.h"
 
@@ -10,7 +11,7 @@ void main(void)
 	clock_init();
 	led_init();
 	timer_init();
-	EA = 1;
+	enable_interrupts();
 
 	start = time();
 	while (1) {

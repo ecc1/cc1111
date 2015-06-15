@@ -1,6 +1,7 @@
 // Print "Hello, world!" over UART
 
 #include <stdio.h>
+#include "arch.h"
 #include "clock.h"
 #include "serial.h"
 
@@ -10,7 +11,7 @@ void main(void)
 
 	clock_init();
 	serial_init();
-	EA = 1;
+	enable_interrupts();
 
 	while (1)
 		printf("Hello, world from CC1111! (%u)\n", ++counter);
