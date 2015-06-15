@@ -5,6 +5,8 @@
 
 void serial_init(void);
 
+char serial_getc(void);
+
 void serial_putc(char);
 
 void serial_rx_isr(void) __interrupt URX0_VECTOR;

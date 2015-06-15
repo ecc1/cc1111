@@ -26,10 +26,36 @@ typedef struct {
 	(f).remove = ((f).remove + 1) % FIFO_SIZE; \
 } while (0)
 
+__xdata static volatile fifo_t rx_fifo;
+
+void serial_rx_isr(void) __interrupt URX0_VECTOR
+{
+	if (!fifo_full(rx_fifo))
+		fifo_insert(rx_fifo, U0DBUF);
+}
+
+char serial_getc(void) __critical
+{
+	char c;
+
+	while (fifo_empty(rx_fifo))
+		await_interrupt();
+	fifo_remove(rx_fifo, c);
+	return c;
+}
+
+char getchar(void)
+{
+	char c = serial_getc();
+	if (c == '\r')
+		return '\n';
+	return c;
+}
+
 __xdata static volatile fifo_t tx_fifo;
 static volatile uint8_t tx_started;
 
-void serial_tx_start(void)
+static void serial_tx_start(void)
 {
 	if (!fifo_empty(tx_fifo) && !tx_started) {
 		tx_started = 1;
@@ -62,10 +88,14 @@ void putchar(char c)
 void serial_init(void)
 {
 	// Set up UART0 using Alternative Location 1
-	PERCFG &= ~PERCFG_U0CFG_ALT_MASK;
-	PERCFG |= PERCFG_U0CFG_ALT_1;
+	PERCFG = (PERCFG & ~PERCFG_U0CFG_ALT_MASK) | PERCFG_U0CFG_ALT_1;
 
-	U0CSR |= UxCSR_MODE_UART;
+	// UART mode with receiver enabled
+	U0CSR |= UxCSR_MODE_UART| UxCSR_RE;
+
+	// Select peripheral function rather than GPIO for TX on P0_3
+	// (not required for RX on P0_2)
+	P0SEL |= (1 << 3);
 
 	// TX on P0_3, RX on P0_2
 	P0DIR |= (1 << 3);
@@ -97,14 +127,6 @@ void serial_init(void)
 		 UxUCR_PARITY_DISABLE |
 		 UxUCR_SPB_1_STOP_BIT | UxUCR_STOP_HIGH | UxUCR_START_LOW);
 
-	// Select peripheral function rather than GPIO for TX on P0_3
-	// (not required for RX on P0_2)
-	P0SEL |= (1 << 3);
-
-	// Enable UART0 TX interrupt
-	IEN2 |= IEN2_UTX0IE;
-}
-
-void serial_rx_isr(void) __interrupt URX0_VECTOR
-{
+	IEN2 |= IEN2_UTX0IE;	// enable UART0 TX interrupt
+	URX0IE = 1;		// enable UART0 RX interrupt
 }
