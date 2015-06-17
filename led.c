@@ -7,21 +7,13 @@
 void led_init(void)
 {
 #if BOARD == BOARD_TI_DONGLE
-
-#define LED_BIT		P1_1
-
 	P1DIR |= (1 << 1);
 	P1_1 = 0;
-
 #elif BOARD == BOARD_SRF_STICK
-
-#define LED_BIT		P1_7
-
 	P1DIR |= (1 << 7) | (1 << 6) | (1 << 5);
-	P1_7 = 0;
-	P1_6 = 0;
-	P1_5 = 0;
-
+	P1_7 = 0;	// heartbeat
+	P1_6 = 0;	// USB RX
+	P1_5 = 0;	// USB TX
 #else
 #error "unknown BOARD"
 #endif
@@ -29,7 +21,13 @@ void led_init(void)
 
 void led_toggle(void)
 {
-	LED_BIT ^= 1;
+#if BOARD == BOARD_TI_DONGLE
+	P1_1 ^= 1;
+#elif BOARD == BOARD_SRF_STICK
+	P1_7 ^= 1;
+#else
+#error "unknown BOARD"
+#endif
 }
 
 static void blink_once(uint16_t period_ms)
