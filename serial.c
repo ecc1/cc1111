@@ -34,13 +34,22 @@ void serial_rx_isr(void) __interrupt URX0_VECTOR
 		fifo_insert(rx_fifo, U0DBUF);
 }
 
-char serial_getc(void) __critical
+int serial_pollc(void) __critical
 {
-	char c;
+	uint8_t c;
 
-	while (fifo_empty(rx_fifo))
-		await_interrupt();
+	if (fifo_empty(rx_fifo))
+		return -1;
 	fifo_remove(rx_fifo, c);
+	return c;
+}
+
+char serial_getc(void)
+{
+	int c;
+
+	while ((c = serial_pollc()) == -1)
+		idle();
 	return c;
 }
 
@@ -57,7 +66,7 @@ static volatile uint8_t tx_started;
 
 static void serial_tx_start(void)
 {
-	if (!fifo_empty(tx_fifo) && !tx_started) {
+	if (!tx_started && !fifo_empty(tx_fifo)) {
 		tx_started = 1;
 		fifo_remove(tx_fifo, U0DBUF);
 	}
