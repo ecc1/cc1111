@@ -10,7 +10,7 @@ void main(void)
 	clock_init();
 
 	P2DIR |= (1 << 0);	// enable output on P2_0
-	while (1) {
+	for (;;) {
 		P2_0 ^= 1;	// toggle it
 		delay(10);
 	}

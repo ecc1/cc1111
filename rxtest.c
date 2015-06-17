@@ -17,6 +17,6 @@ void main(void)
 
 	enable_interrupts();
 
-	while (1)
+	for (;;)
 		recv_packet(0);
 }

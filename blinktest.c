@@ -17,7 +17,7 @@ void main(void)
 	P1_5 = 0;
 
 	state = 0;
-	while (1) {
+	for (;;) {
 		switch (state) {
 		case 0:
 			P1_7 ^= 1;

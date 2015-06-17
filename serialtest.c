@@ -13,6 +13,6 @@ void main(void)
 	serial_init();
 	enable_interrupts();
 
-	while (1)
+	for (;;)
 		printf("Hello, world from CC1111! (%u)\n", ++counter);
 }

@@ -14,7 +14,7 @@ void main(void)
 	enable_interrupts();
 
 	start = time();
-	while (1) {
+	for (;;) {
 		uint16_t now = time();
 		if (now >= start + interval) {
 			led_toggle();
