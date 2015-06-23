@@ -15,10 +15,11 @@ void dma_init(void)
 	set_word(DMA0CFG, &dma_config);
 }
 
-#define set_high_low(name, val)	do { \
-	name##_high = ((uint16_t) (val)) >> 8;	\
-	name##_low = ((uint16_t) (val)) & 0xFF;	\
-} while (0)
+#define set_high_low(name, val)				\
+	do {						\
+		name##_high = ((uint16_t) (val)) >> 8;	\
+		name##_low = ((uint16_t) (val)) & 0xFF;	\
+	} while (0)
 
 void dma_set_receive(void *buf, size_t len)
 {
