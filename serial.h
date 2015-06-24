@@ -5,6 +5,8 @@
 
 void serial_init(void);
 
+void use_serial_stdio(void);
+
 int serial_pollc(void);
 
 char serial_getc(void);

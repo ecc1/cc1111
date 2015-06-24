@@ -10,7 +10,7 @@ void main(void)
 	int counter = 0;
 
 	clock_init();
-	serial_init();
+	use_serial_stdio();
 	enable_interrupts();
 
 	for (;;)

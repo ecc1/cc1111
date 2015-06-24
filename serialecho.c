@@ -8,7 +8,7 @@
 void main(void)
 {
 	clock_init();
-	serial_init();
+	use_serial_stdio();
 	enable_interrupts();
 
 	for (;;)

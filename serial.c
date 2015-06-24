@@ -1,6 +1,7 @@
 #include "serial.h"
 
 #include "arch.h"
+#include "set_stdio.h"
 
 // Based on AltOS cc1111/ao_serial.c
 
@@ -55,14 +56,6 @@ char serial_getc(void)
 	return c;
 }
 
-char getchar(void)
-{
-	char c = serial_getc();
-	if (c == '\r')
-		return '\n';
-	return c;
-}
-
 __xdata static volatile fifo_t tx_fifo;
 static volatile uint8_t tx_started;
 
@@ -87,13 +80,6 @@ void serial_putc(char c) __critical
 		await_interrupt();
 	fifo_insert(tx_fifo, c);
 	serial_tx_start();
-}
-
-void putchar(char c)
-{
-	if (c == '\n')
-		serial_putc('\r');
-	serial_putc(c);
 }
 
 void serial_init(void)
@@ -140,4 +126,10 @@ void serial_init(void)
 
 	IEN2 |= IEN2_UTX0IE;	// enable UART0 TX interrupt
 	URX0IE = 1;		// enable UART0 RX interrupt
+}
+
+void use_serial_stdio(void)
+{
+	serial_init();
+	set_stdio(serial_getc, serial_putc);
 }
