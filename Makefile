@@ -21,11 +21,11 @@ LDFLAGS = \
 	--xram-loc 0xF000 --xram-size 0xF00 \
 	--iram-size 0x100
 
-PROGRAMS = blinktest delaytest rxtest serialecho serialtest timetest txtest
+PROGRAMS = blinktest delaytest rxtest serialecho serialtest timetest txtest usbecho usbserial usbtest
 
 LIBRARY = modules.lib
 
-CFILES = 4b6b.c background.c clock.c crc.c debug.c delay.c dma.c led.c radio.c rf.c serial.c set_stdio.c
+CFILES = 4b6b.c background.c clock.c crc.c debug.c delay.c dma.c led.c radio.c rf.c serial.c set_stdio.c usb.c usb_descriptor.c
 
 all: $(PROGRAMS:%=%.hex)
 
