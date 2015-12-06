@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "arch.h"
-#include "4b6b.h"
 #include "clock.h"
 #include "crc.h"
 #include "debug.h"
