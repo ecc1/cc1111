@@ -17,9 +17,9 @@ CFLAGS = $(DEFINES) $(CODEFLAGS) -Wp,-Wall,-MD,$(@:%.rel=%.d),-MT,$@
 
 LDFLAGS = \
 	--out-fmt-ihx \
-	--code-loc 0x000 --code-size 0x8000 \
-	--xram-loc 0xF000 --xram-size 0xF00 \
-	--iram-size 0x100
+	--code-loc 0x0000 --code-size 0x8000 \
+	--xram-loc 0xF000 --xram-size 0x0F00 \
+	--iram-size 0x0100
 
 PROGRAMS = blinktest delaytest rxtest serialecho serialtest timetest txtest usbecho usbserial usbtest
 
