@@ -41,10 +41,11 @@ void main(void)
 	dma_init();
 	led_init();
 	radio_init();
-	serial_init();
 	timer_init();
-
+	use_serial_stdio();
 	enable_interrupts();
+
+	printf("Starting transmit test\n\n");
 
 	command[0] = DEVICE_PUMP;
 	command[1] = PUMP_ID_1;
@@ -62,25 +63,23 @@ void main(void)
 		led_toggle();
 	}
 
-	delay(1000);
-
 	command[4] = GET_PUMP_MODEL;
-	for (n = 0; n < 10; ++n) {
+	for (n = 0; n < retries; ++n) {
 		send_packet(command, COMMAND_SIZE);
 		p = recv_packet(25);
 		if (p && p[4] == GET_PUMP_MODEL) {
-			printf("Pump model: %c%c%c\n", p[7], p[8], p[9]);
+			printf("Pump model: %c%c%c (retries: %d)\n", p[7], p[8], p[9], n);
 			break;
 		}
 		led_toggle();
 	}
 
 	command[4] = GET_BATTERY;
-	for (n = 0; n < 10; ++n) {
+	for (n = 0; n < retries; ++n) {
 		send_packet(command, COMMAND_SIZE);
 		p = recv_packet(25);
 		if (p && p[4] == GET_BATTERY) {
-			printf("Battery: %d.%02dV\n", p[8] / 100, p[8] % 100);
+			printf("Battery: %d.%02dV (retries: %d)\n", p[8] / 100, p[8] % 100, n);
 			break;
 		}
 		led_toggle();
