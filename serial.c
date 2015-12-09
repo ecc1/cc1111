@@ -57,15 +57,21 @@ char serial_getc(void)
 }
 
 __xdata static volatile fifo_t tx_fifo;
+static volatile uint8_t tx_started;
+
+static void serial_tx_start(void)
+{
+	if (!tx_started && !fifo_empty(tx_fifo)) {
+		tx_started = 1;
+		fifo_remove(tx_fifo, U0DBUF);
+	}
+}
 
 void serial_tx_isr(void) __interrupt UTX0_VECTOR
 {
-	if (!fifo_empty(tx_fifo)) {
-		UTX0IF = 0;
-		fifo_remove(tx_fifo, U0DBUF);
-	} else {
-		IEN2 &= ~IEN2_UTX0IE;	// disable UART0 TX interrupt
-	}
+	UTX0IF = 0;
+	tx_started = 0;
+	serial_tx_start();
 }
 
 void serial_putc(char c) __critical
@@ -73,8 +79,7 @@ void serial_putc(char c) __critical
 	while (fifo_full(tx_fifo))
 		await_interrupt();
 	fifo_insert(tx_fifo, c);
-	fifo_remove(tx_fifo, U0DBUF);
-	IEN2 |= IEN2_UTX0IE;	// enable UART0 TX interrupt
+	serial_tx_start();
 }
 
 void serial_init(void)
@@ -119,9 +124,8 @@ void serial_init(void)
 		 UxUCR_PARITY_DISABLE |
 		 UxUCR_SPB_1_STOP_BIT | UxUCR_STOP_HIGH | UxUCR_START_LOW);
 
+	IEN2 |= IEN2_UTX0IE;	// enable UART0 TX interrupt
 	URX0IE = 1;		// enable UART0 RX interrupt
-	IEN2 &= ~IEN2_UTX0IE;	// disable UART0 TX interrupt, but ...
-	UTX0IF = 1;		// set TX flag so it will fire when enabled
 }
 
 void use_serial_stdio(void)
