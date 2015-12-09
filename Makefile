@@ -21,7 +21,7 @@ LDFLAGS = \
 	--xram-loc 0xF000 --xram-size 0x0F00 \
 	--iram-size 0x0100
 
-PROGRAMS = blinktest delaytest rxtest serialecho serialtest timetest txtest usbecho usbserial usbtest
+PROGRAMS = blinktest delaytest ledtest rxtest serialecho serialtest timetest txtest usbecho usbserial usbtest
 
 LIBRARY = modules.lib
 
