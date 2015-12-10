@@ -3,8 +3,10 @@
 
 // Blink LEDs on Ciseco SRF-Stick
 //     heartbeat: P1_7
-//     tx: P1_6
-//     rx: P1_5
+//     TX: P1_6
+//     RX: P1_5
+
+#if BOARD == BOARD_SRF_STICK
 
 void main(void)
 {
@@ -33,3 +35,18 @@ void main(void)
 		delay(250);
 	}
 }
+
+#elif BOARD == BOARD_TI_DONGLE
+
+void main(void)
+{
+	P1DIR |= (1 << 1);
+	P1_1 = 0;
+
+	for (;;) {
+		P1_1 ^= 1;
+		delay(250);
+	}
+}
+
+#endif

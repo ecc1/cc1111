@@ -12,8 +12,8 @@ void led_init(void)
 #elif BOARD == BOARD_SRF_STICK
 	P1DIR |= (1 << 7) | (1 << 6) | (1 << 5);
 	P1_7 = 0;	// heartbeat
-	P1_6 = 0;	// USB RX
-	P1_5 = 0;	// USB TX
+	P1_6 = 0;	// TX
+	P1_5 = 0;	// RX
 #else
 #error "unknown BOARD"
 #endif
