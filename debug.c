@@ -45,7 +45,7 @@ __xdata static uint8_t packet[256];
 
 uint8_t *recv_packet(int timeout)
 {
-	__xdata static uint8_t data[256];
+	__xdata static uint8_t bytes[256];
 	int length, n;
 	uint8_t crc;
 
@@ -62,8 +62,8 @@ uint8_t *recv_packet(int timeout)
 	printf("Received %d-byte packet:\n", length);
 	print_bytes(packet, length);
 #endif
-	memset(data, 0, sizeof(data));
-	n = decode_4b6b(packet, data, length);
+	memset(bytes, 0, sizeof(bytes));
+	n = decode_4b6b(packet, bytes, length);
 #if VERBOSE
 	printf("4b/6b decoding%s:\n", n == -1 ? " FAILED" : "");
 #else
@@ -74,13 +74,13 @@ uint8_t *recv_packet(int timeout)
 	}
 	printf("< ");
 #endif
-	print_bytes(data, n);
+	print_bytes(bytes, n);
 	if (n < 2)
 		return 0;
-	crc = crc8(data, n - 1);
-	if (data[n - 1] != crc)
+	crc = crc8(bytes, n - 1);
+	if (bytes[n - 1] != crc)
 		printf("CRC should be %02X\n", crc);
-	return data;
+	return bytes;
 }
 
 void send_packet(uint8_t *buf, size_t len)
