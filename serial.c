@@ -62,6 +62,22 @@ char serial_getc(void)
 	return c;
 }
 
+#ifdef USE_SERIAL_TX_POLLING
+
+void serial_putc(char c)
+{
+	U0DBUF = c;
+	while (!UTX0IF)
+		nop();
+	UTX0IF = 0;
+}
+
+void serial_tx_isr(void) __interrupt UTX0_VECTOR
+{
+}
+
+#else
+
 __xdata static volatile fifo_t tx_fifo;
 static volatile uint8_t tx_started;
 
@@ -87,6 +103,8 @@ void serial_putc(char c) __critical
 	fifo_insert(tx_fifo, c);
 	serial_tx_start();
 }
+
+#endif
 
 void serial_init(void)
 {
