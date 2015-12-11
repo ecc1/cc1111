@@ -34,8 +34,12 @@ static void usb_set_interrupts(void)
 
 void usb_isr(void) __interrupt P2INT_VECTOR
 {
+	// USBIIF, USBOIF, and USBCIF are cleared when read.
+	// If not cleared, repeated USB interrupts will take priority
+	// over UART interrupts and serial I/O will lock up.
 	USBIF = 0;
 	usb_iif |= USBIIF;
+	(void) USBOIF;
 	if (USBCIF & USBCIF_RSTIF)
 		usb_set_interrupts();
 }
