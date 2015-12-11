@@ -21,6 +21,4 @@ void usb_disable(void);
 
 void usb_isr(void) __interrupt P2INT_VECTOR;
 
-extern volatile uint8_t usb_running;
-
 #endif /* _USB_H */

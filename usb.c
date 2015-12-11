@@ -14,17 +14,18 @@
 #include "usb_defs.h"
 #include "set_stdio.h"
 
+static uint16_t usb_in_bytes;
+static uint16_t usb_in_bytes_last;
+static uint16_t usb_out_bytes;
 static volatile uint8_t usb_iif;
-volatile uint8_t usb_running;
+static volatile uint8_t usb_running;
 
 static void usb_set_interrupts(void)
 {
 	// IN interrupts on the control and IN endpoints
 	USBIIE = (1 << USB_CONTROL_EP) | (1 << USB_IN_EP);
-
 	// OUT interrupts on the OUT endpoint
 	USBOIE = (1 << USB_OUT_EP);
-
 	// Only care about reset
 	USBCIE = USBCIE_RSTIE;
 }
@@ -45,15 +46,17 @@ struct usb_setup {
 	uint16_t value;
 	uint16_t index;
 	uint16_t length;
-} usb_setup;
+};
 
-uint8_t usb_ep0_state;
-uint8_t *usb_ep0_in_data;
-uint8_t usb_ep0_in_len;
-uint8_t usb_ep0_in_buf[2];
-uint8_t usb_ep0_out_len;
-uint8_t *usb_ep0_out_data;
-uint8_t usb_configuration;
+__xdata static struct usb_setup usb_setup;
+
+static uint8_t usb_ep0_state;
+static uint8_t *usb_ep0_in_data;
+static uint8_t usb_ep0_in_len;
+static uint8_t usb_ep0_in_buf[2];
+static uint8_t usb_ep0_out_len;
+static uint8_t *usb_ep0_out_data;
+static uint8_t usb_configuration;
 
 // Send an IN data packet
 
@@ -63,7 +66,7 @@ static void usb_ep0_flush(void)
 	uint8_t cs0;
 
 	// If the IN packet hasn't been picked up, just return
-	USBINDEX = 0;
+	USBINDEX = USB_CONTROL_EP;
 	cs0 = USBCS0;
 	if (cs0 & USBCS0_INPKT_RDY)
 		return;
@@ -79,7 +82,7 @@ static void usb_ep0_flush(void)
 	usb_ep0_in_len -= this_len;
 	while (this_len--)
 		USBFIFO[0] = *usb_ep0_in_data++;
-	USBINDEX = 0;
+	USBINDEX = USB_CONTROL_EP;
 	USBCS0 = cs0;
 }
 
@@ -125,7 +128,7 @@ static void usb_ep0_fill(void)
 {
 	uint8_t len;
 
-	USBINDEX = 0;
+	USBINDEX = USB_CONTROL_EP;
 	len = USBCNT0;
 	if (len > usb_ep0_out_len)
 		len = usb_ep0_out_len;
@@ -161,7 +164,7 @@ static void usb_set_configuration(void)
 static void usb_ep0_setup(void)
 {
 	// Pull the setup packet out of the fifo
-	usb_ep0_out_data = (uint8_t *) &usb_setup;
+	usb_ep0_out_data = (__xdata uint8_t *) &usb_setup;
 	usb_ep0_out_len = 8;
 	usb_ep0_fill();
 	if (usb_ep0_out_len != 0)
@@ -169,11 +172,11 @@ static void usb_ep0_setup(void)
 
 	usb_ep0_in_data = usb_ep0_in_buf;
 	usb_ep0_in_len = 0;
-	switch(usb_setup.dir_type_recip & USB_SETUP_TYPE_MASK) {
+	switch (usb_setup.dir_type_recip & USB_SETUP_TYPE_MASK) {
 	case USB_TYPE_STANDARD:
-		switch(usb_setup.dir_type_recip & USB_SETUP_RECIP_MASK) {
+		switch (usb_setup.dir_type_recip & USB_SETUP_RECIP_MASK) {
 		case USB_RECIP_DEVICE:
-			switch(usb_setup.request) {
+			switch (usb_setup.request) {
 			case USB_REQ_GET_STATUS:
 				usb_ep0_queue_byte(0);
 				usb_ep0_queue_byte(0);
@@ -195,7 +198,7 @@ static void usb_ep0_setup(void)
 			break;
 		case USB_RECIP_INTERFACE:
 			#pragma disable_warning 110
-			switch(usb_setup.request) {
+			switch (usb_setup.request) {
 			case USB_REQ_GET_STATUS:
 				usb_ep0_queue_byte(0);
 				usb_ep0_queue_byte(0);
@@ -208,7 +211,7 @@ static void usb_ep0_setup(void)
 			}
 			break;
 		case USB_RECIP_ENDPOINT:
-			switch(usb_setup.request) {
+			switch (usb_setup.request) {
 			case USB_REQ_GET_STATUS:
 				usb_ep0_queue_byte(0);
 				usb_ep0_queue_byte(0);
@@ -235,7 +238,7 @@ static void usb_ep0_setup(void)
 
 	// Figure out how to ACK the setup packet and the next state
 
-	USBINDEX = 0;
+	USBINDEX = USB_CONTROL_EP;
 	if (usb_ep0_in_len) {
 		// Sending data back to the host
 		usb_ep0_state = USB_EP0_DATA_IN;
@@ -270,13 +273,13 @@ static int usb_poll_ep0(void) __critical
 
 // End point 0 receives all of the control messages.
 
-static void usb_endpoint0(void)
+static void usb_ep0(void)
 {
 	uint8_t cs0;
 
 	if (!usb_poll_ep0())
 		return;
-	USBINDEX = 0;
+	USBINDEX = USB_CONTROL_EP;
 	cs0 = USBCS0;
 	if (cs0 & USBCS0_SETUP_END) {
 		USBCS0 = USBCS0_CLR_SETUP_END;
@@ -297,7 +300,7 @@ static void usb_endpoint0(void)
 			break;
 		case USB_EP0_DATA_OUT:
 			usb_ep0_fill();
-			USBINDEX = 0;
+			USBINDEX = USB_CONTROL_EP;
 			if (usb_ep0_out_len == 0) {
 				usb_ep0_state = USB_EP0_IDLE;
 				USBCS0 = USBCS0_CLR_OUTPKT_RDY | USBCS0_DATA_END;
@@ -320,9 +323,6 @@ static void usb_in_wait(void)
 		await_interrupt();
 	}
 }
-
-static uint16_t usb_in_bytes;
-static uint16_t usb_in_bytes_last;
 
 // Send the current IN packet
 
@@ -362,22 +362,25 @@ void usb_putc(char c) __critical
 
 int usb_pollc(void) __critical
 {
-	static uint16_t count;
 	uint8_t c;
 
-	USBINDEX = USB_OUT_EP;
-	if (count == 0) {
+	if (usb_out_bytes == 0) {
+		USBINDEX = USB_OUT_EP;
 		if ((USBCSOL & USBCSOL_OUTPKT_RDY) == 0)
 			return -1;
-		count = (USBCNTH << 8) | USBCNTL;
-		if (count == 0) {
+		usb_out_bytes = (USBCNTH << 8) | USBCNTL;
+		if (usb_out_bytes == 0) {
+			USBINDEX = USB_OUT_EP;
 			USBCSOL &= ~USBCSOL_OUTPKT_RDY;
 			return -1;
 		}
 	}
+	--usb_out_bytes;
 	c = USBFIFO[USB_OUT_EP << 1];
-	if (--count == 0)
+	if (usb_out_bytes == 0) {
+		USBINDEX = USB_OUT_EP;
 		USBCSOL &= ~USBCSOL_OUTPKT_RDY;
+	}
 	return c;
 }
 
@@ -432,7 +435,7 @@ void usb_disable(void)
 void usb_init(void)
 {
 	usb_enable();
-	add_background_task(usb_endpoint0);
+	add_background_task(usb_ep0);
 }
 
 void use_usb_stdio(void)
