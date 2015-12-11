@@ -21,18 +21,18 @@ typedef struct {
 
 #define fifo_empty(f)	((f).insert == (f).remove)
 
-#define fifo_full(f)	((((f).insert + 1) % FIFO_SIZE) == (f).remove)
+#define fifo_full(f)	(((uint8_t)((f).insert + 1) % FIFO_SIZE) == (f).remove)
 
-#define fifo_insert(f, c)					\
-	do {							\
-		(f).fifo[(f).insert] = (c);			\
-		(f).insert = ((f).insert + 1) % FIFO_SIZE;	\
+#define fifo_insert(f, c)						\
+	do {								\
+		(f).fifo[(f).insert] = (c);				\
+		(f).insert = (uint8_t)((f).insert + 1) % FIFO_SIZE;	\
 	} while (0)
 
-#define fifo_remove(f, c)					\
-	do {							\
-		(c) = (f).fifo[(f).remove];			\
-		(f).remove = ((f).remove + 1) % FIFO_SIZE;	\
+#define fifo_remove(f, c)						\
+	do {								\
+		(c) = (f).fifo[(f).remove];				\
+		(f).remove = (uint8_t)((f).remove + 1) % FIFO_SIZE;	\
 	} while (0)
 
 __xdata static volatile fifo_t rx_fifo;
