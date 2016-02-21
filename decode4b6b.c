@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	int n, len;
 
 	if (argc <= 1 || argc >= BUF_SIZE) {
-		fprintf(stderr, "Usage: %s bytes in hex ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s bytes in hex ... (max: %d)\n", argv[0], BUF_SIZE);
 		return 1;
 	}
 	--argc;
@@ -45,11 +45,12 @@ int main(int argc, char **argv)
 		++argv;
 	}
 
-	len = decode_4b6b_length(n);
-	memset(output, 0, len);
-	if (decode_4b6b(input, output, n))
+	memset(output, 0, n);
+	len = decode_4b6b(input, output, n);
+	if (len == -1)
 		printf("Decoding FAILED\n");
-	print_bytes(output, len);
+	else
+		print_bytes(output, len);
 
 	return 0;
 }
