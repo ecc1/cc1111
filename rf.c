@@ -46,7 +46,7 @@ void rf_init(void)
 #endif
 
 	// CHANBW_E = 1, CHANBW_M = 1, DRATE_E = 9
-	// channel BW = 24MHz / (8 * (4 + CHANNBW_M) * 2^CHANBW_E) == 300kHz
+	// channel BW = 24MHz / (8 * (4 + CHANBW_M) * 2^CHANBW_E) == 300kHz
 	MDMCFG4 = (1 << RF_MDMCFG4_CHANBW_E_SHIFT) |
 		(1 << RF_MDMCFG4_CHANBW_M_SHIFT) |
 		(9 << RF_MDMCFG4_DRATE_E_SHIFT);
