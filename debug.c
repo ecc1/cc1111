@@ -64,16 +64,12 @@ uint8_t *recv_packet(int timeout)
 #endif
 	memset(bytes, 0, sizeof(bytes));
 	n = decode_4b6b(packet, bytes, length);
-#if VERBOSE
-	printf("4b/6b decoding%s:\n", n == -1 ? " FAILED" : "");
-#else
 	print_time();
 	if (n == -1) {
 		printf("4b/6b decoding failed\n");
 		return 0;
 	}
 	printf("< ");
-#endif
 	print_bytes(bytes, n);
 	if (n < 2)
 		return 0;
