@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	uint8_t buf[256];
+	uint8_t buf[1024];
 	int n;
 
 	if (argc <= 1 || argc >= sizeof(buf)) {
